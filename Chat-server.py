@@ -24,7 +24,7 @@ class Server():
         while True:
             try:
                 data = client.recv(2048)
-                print(addr, " - ", data.decode())
+                print(addr, " : ", data.decode())
                 for cl in self._clients:
                     cl.send(data)
             except:
