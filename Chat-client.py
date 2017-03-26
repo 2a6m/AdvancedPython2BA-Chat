@@ -2,14 +2,16 @@ import socket
 import threading
 
 class Client():
-    def __init__(self, host):
+    def __init__(self, host, name):
+        self._name = name
         self._host = host
         self._port = 5000
         self._socket = socket.socket()
         self._running = True
 
     def send_msg(self, txt):
-        msg = txt.encode()
+        msg = self._name + " - " + txt
+        msg = msg.encode()
         totalsent = 0
         while totalsent < len(msg):
             sent = self._socket.send(msg[totalsent:])
@@ -36,5 +38,6 @@ class Client():
 
 if __name__ == "__main__":
     h = str(input('address to connect:',))
-    Client(host=h).run()
+    n = str(input("You're name:"))
+    Client(host=h, name=n).run()
 
