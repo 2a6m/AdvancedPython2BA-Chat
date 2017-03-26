@@ -13,18 +13,22 @@ class Server():
 
     def listen(self):
         self._sock.listen()
+        print('listenning...')
         while self._running:
             client, addr = self._sock.accept()
             client.send("You're connected to the server".encode())
+            self._clients.append(client)
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def listenToClient(self, client, addr):
-        while self._running:
+        while True:
             try:
                 data = client.recv(2048)
                 print(addr, " - ", data.decode())
-                client.send(data)
+                for cl in self._clients:
+                    cl.send(data)
             except:
+                self._clients.remove(client)
                 client.close()
                 return False
 
