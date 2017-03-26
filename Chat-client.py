@@ -11,8 +11,7 @@ class Client():
         self._socket = socket.socket()
 
     def _send(self, txt):
-        msg = self._name + " - " + txt
-        msg = msg.encode()
+        msg = txt.encode()
         totalsent = 0
         while totalsent < len(msg):
             sent = self._socket.send(msg[totalsent:])
@@ -28,10 +27,12 @@ class Client():
     def run(self):
         handlers = {
             '/exit': self._exit,
-            '/send': self._send
+            '/send': self._send,
         }
         self._running = True
         self._socket.connect((self._host, self._port))
+        print(type(self._name))
+        self._send(self._name)
         threading.Thread(target=self._listen).start()
         while self._running:
             line = sys.stdin.readline().rstrip() + ' '
