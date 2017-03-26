@@ -8,7 +8,7 @@ class Server():
         self._port = 5000
         self._sock = socket.socket()
         self._sock.bind((self._host, self._port))
-        self._clients = []
+        self._clients = {}
         self._running = True
 
     def listen(self):
@@ -17,18 +17,19 @@ class Server():
         while self._running:
             client, addr = self._sock.accept()
             client.send("You're connected to the server".encode())
-            self._clients.append(client)
+            name_client = client.recv(2048).decode()
+            self._clients[client] = name_client
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def listenToClient(self, client, addr):
         while True:
             try:
-                data = client.recv(2048)
-                print(addr, " : ", data.decode())
+                data = self._clients[client] + ' - ' + client.recv(2048).decode()
+                print(addr, " : ", data)
                 for cl in self._clients:
-                    cl.send(data)
+                    cl.send(data.encode())
             except:
-                self._clients.remove(client)
+                self._clients.pop(client)
                 client.close()
                 return False
 
