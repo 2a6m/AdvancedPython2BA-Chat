@@ -23,10 +23,8 @@ class Client:
 
     def refreshClients(self, msg):
         clients_co = json.loads(msg)
-        print('dico', type(clients_co))
         for elem in clients_co:
-            print(elem)
-            self._clients[clients_co[elem][0]] = clients_co[elem][1]
+            self._clients[elem] = clients_co[elem]
         print(self._clients)
 
     def treat(self, order, msg):
