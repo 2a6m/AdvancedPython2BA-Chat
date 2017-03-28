@@ -10,6 +10,7 @@ class Client():
         self._host = host
         self._port = 5000
         self._socket = socket.socket()
+        self._clients = {}
 
     def _send(self, txt):
         msg = txt.encode()
@@ -23,7 +24,11 @@ class Client():
         print(data)
 
     def refreshClients(self, msg):
-        self._clients = json.dumps(msg)
+        clients_co = json.loads(msg)
+        print('dico', type(clients_co))
+        for elem in clients_co:
+            print(elem)
+            self._clients[clients_co[elem][0]] = clients_co[elem][1]
         print(self._clients)
 
     def treat(self, order, msg):
@@ -40,6 +45,8 @@ class Client():
                 data = self._socket.recv(4096).decode()
             except:
                 print('Error at the reception')
+                self._running = False
+                self._socket.close()
             order, msg = self.analyse(data)
             self.treat(order, msg)
 

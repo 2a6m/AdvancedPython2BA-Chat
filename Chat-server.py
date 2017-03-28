@@ -64,7 +64,11 @@ class Server():
             self._send(data, cl)
 
     def sendClients(self, msg, client, addr):
-        data = json.dumps(str(self._clients))
+        data = {}
+        for cl in self._clients:
+            data[str(self._clients[cl][0])] = self._clients[cl][1]
+        print(data)
+        data = json.dumps(data)
         txt = '/clients ' + data
         self._send(txt, client)
 
