@@ -11,6 +11,13 @@ class Server():
         self._clients = {}
         self._running = True
 
+    def _send(self, txt, client):
+        msg = txt.encode()
+        totalsent = 0
+        while totalsent < len(msg):
+            sent = client.send(msg[totalsent:])
+            totalsent += sent
+
     def listen(self):
         self._sock.listen()
         print('listenning...')
@@ -23,11 +30,12 @@ class Server():
 
     def listenToClient(self, client, addr):
         while self._running:
+            txt = client.recv(2048).decode()
             try:
-                data = self._clients[client] + ' - ' + client.recv(2048).decode()
+                data = self._clients[client] + ' - ' + txt
                 print(addr, " : ", data)
                 for cl in self._clients:
-                    cl.send(data.encode())
+                    self._send(data, cl)
             except:
                 self._clients.pop(client)
                 client.close()
