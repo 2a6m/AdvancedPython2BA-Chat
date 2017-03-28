@@ -1,7 +1,8 @@
 import socket
 import threading
 import sys
-
+import re
+import json
 
 class Client():
     def __init__(self, host, name):
@@ -17,21 +18,58 @@ class Client():
             sent = self._socket.send(msg[totalsent:])
             totalsent += sent
 
+    def show(self, data):
+        # print('Reçu', len(data), 'octets :')
+        print(data)
+
+    def refreshClients(self, msg):
+        self._clients = json.dumps(msg)
+        print(self._clients)
+
+    def treat(self, order, msg):
+        orders = {
+            '/senda': self.show,
+            '/clients': self.refreshClients
+        }
+        if order in orders:
+            orders[order](msg)
+
     def _listen(self):  #quand on exit(), il attend encore un message avant de quitter
         while self._running:
-            data = self._socket.recv(4096).decode()
-            if len(data) != 0:
-                #print('Reçu', len(data), 'octets :')
-                print(data)
+            try:
+                data = self._socket.recv(4096).decode()
+            except:
+                print('Error at the reception')
+            order, msg = self.analyse(data)
+            self.treat(order, msg)
+
+    def analyse(self, txt):
+        pattern = r'(?P<order>/[a-z]*) *(?P<message>.*)'
+        p = re.compile(pattern)
+        m = p.match(txt)
+        if m is not None:
+            order = m.group('order')
+            msg = m.group('message')
+            return order, msg
+        else:
+            return '/client', 'Error, you send a wrong message'
+
+    def sendToAll(self, txt):
+        msg = '/senda ' + txt
+        self._send(msg)
+
+    def requestConnected(self):
+        msg = '/clients'
+        self._send(msg)
 
     def run(self):
         handlers = {
             '/exit': self._exit,
-            '/send': self._send,
+            '/send': self.sendToAll,
+            '/clients': self.requestConnected
         }
         self._running = True
         self._socket.connect((self._host, self._port))
-        print(type(self._name))
         self._send(self._name)
         threading.Thread(target=self._listen).start()
         while self._running:
