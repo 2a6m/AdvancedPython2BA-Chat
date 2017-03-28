@@ -6,7 +6,7 @@ import json
 
 
 class Client:
-    def __init__(self, host, name):
+    def __init__(self, host, name=None):
         self._name = name
         self._host = host
         self._port = 5000
@@ -65,6 +65,19 @@ class Client:
         msg = '/clients'
         self._send(msg)
 
+    def chooseName(self, dico):
+        print("You can't choose a name from this list :")
+        print(dico['name forbidden'])
+        ok = False
+        while ok is not True:
+            name = str(input("You're name:"))
+            if name not in dico['name forbidden']:
+                ok = True
+                return(name)
+            else:
+                print('choose a other name please')
+                ok = False
+
     def run(self):
         handlers = {
             '/exit': self._exit,
@@ -72,6 +85,7 @@ class Client:
             '/clients': self.requestConnected
         }
         self._socket.connect((self._host, self._port))
+        self._name = self.chooseName(json.loads(self._socket.recv(2048).decode()))
         self._send(self._name)
         threading.Thread(target=self._listen).start()
         while self._running:
@@ -92,5 +106,4 @@ class Client:
 
 if __name__ == "__main__":
     h = str(input('address to connect:',))
-    n = str(input("You're name:"))
-    Client(host=h, name=n).run()
+    Client(host=h).run()

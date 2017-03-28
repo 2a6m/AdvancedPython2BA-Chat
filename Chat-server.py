@@ -20,14 +20,22 @@ class Server:
             sent = client.send(msg[totalsent:])
             totalsent += sent
 
+    def nameForbidden(self):
+        lst = [self._clients[cl] for cl in self._clients]
+        name_lst = [elem[0] for elem in lst] + ['']
+        name = {'name forbidden': name_lst}
+        return(json.dumps(name))
+
     def listen(self):
         self._sock.listen()
         print('listenning...')
         while self._running:
             client, addr = self._sock.accept()
-            client.send("/senda You're connected to the server".encode())
+            client.send(self.nameForbidden().encode())
             name_client = client.recv(2048).decode()
             self._clients[client] = (name_client, addr)
+            print(self._clients)
+            client.send("/senda You're connected to the server".encode())
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def analyse(self, txt):
