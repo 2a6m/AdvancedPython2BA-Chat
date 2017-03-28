@@ -22,7 +22,7 @@ class Server():
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def listenToClient(self, client, addr):
-        while True:
+        while self._running:
             try:
                 data = self._clients[client] + ' - ' + client.recv(2048).decode()
                 print(addr, " : ", data)
