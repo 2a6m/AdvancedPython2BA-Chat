@@ -4,7 +4,7 @@ import re
 import json
 
 
-class Server():
+class Server:
     def __init__(self):
         self._host = ''
         self._port = 5000
@@ -43,7 +43,7 @@ class Server():
 
     def sendToExpeditor(self, txt, client, addr):
         msg = '/senda ' + txt
-        self._send(client, msg)
+        self._send(msg, client)
 
     def treat(self, order, msg, client, addr):
         orders = {

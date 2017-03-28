@@ -4,13 +4,15 @@ import sys
 import re
 import json
 
-class Client():
+
+class Client:
     def __init__(self, host, name):
         self._name = name
         self._host = host
         self._port = 5000
         self._socket = socket.socket()
         self._clients = {}
+        self._running = True
 
     def _send(self, txt):
         msg = txt.encode()
@@ -18,10 +20,6 @@ class Client():
         while totalsent < len(msg):
             sent = self._socket.send(msg[totalsent:])
             totalsent += sent
-
-    def show(self, data):
-        # print('Reçu', len(data), 'octets :')
-        print(data)
 
     def refreshClients(self, msg):
         clients_co = json.loads(msg)
@@ -33,7 +31,7 @@ class Client():
 
     def treat(self, order, msg):
         orders = {
-            '/senda': self.show,
+            '/senda': print,
             '/clients': self.refreshClients
         }
         if order in orders:
@@ -43,12 +41,12 @@ class Client():
         while self._running:
             try:
                 data = self._socket.recv(4096).decode()
+                order, msg = self.analyse(data)
+                self.treat(order, msg)
             except:
                 print('Error at the reception')
                 self._running = False
                 self._socket.close()
-            order, msg = self.analyse(data)
-            self.treat(order, msg)
 
     def analyse(self, txt):
         pattern = r'(?P<order>/[a-z]*) *(?P<message>.*)'
@@ -75,7 +73,6 @@ class Client():
             '/send': self.sendToAll,
             '/clients': self.requestConnected
         }
-        self._running = True
         self._socket.connect((self._host, self._port))
         self._send(self._name)
         threading.Thread(target=self._listen).start()
@@ -99,4 +96,3 @@ if __name__ == "__main__":
     h = str(input('address to connect:',))
     n = str(input("You're name:"))
     Client(host=h, name=n).run()
-
