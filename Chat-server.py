@@ -25,14 +25,14 @@ class Server():
             client, addr = self._sock.accept()
             client.send("You're connected to the server".encode())
             name_client = client.recv(2048).decode()
-            self._clients[client] = name_client
+            self._clients[client] = (name_client, addr)
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def listenToClient(self, client, addr):
         while self._running:
             txt = client.recv(2048).decode()
             try:
-                data = self._clients[client] + ' - ' + txt
+                data = self._clients[client][0] + ' - ' + txt
                 print(addr, " : ", data)
                 for cl in self._clients:
                     self._send(data, cl)
