@@ -33,13 +33,14 @@ class Server:
             client, addr = self._sock.accept()
             client.send(self.nameForbidden().encode())
             name_client = client.recv(2048).decode()
-            self._clients[client] = (name_client, addr)
+            pp_client = (client.recv(2048).decode(), int(client.recv(2048).decode()))
+            self._clients[client] = (name_client, addr, pp_client)
             print(self._clients)
-            client.send("/senda You're connected to the server".encode())
+            client.send("#senda You're connected to the server".encode())
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def analyse(self, txt):
-        pattern = r'(?P<order>/[a-z]*) *(?P<message>.*)'
+        pattern = r'(?P<order>#[a-z]*) *(?P<message>.*)'
         p = re.compile(pattern)
         m = p.match(txt)
         if m is not None:
@@ -47,17 +48,17 @@ class Server:
             msg = m.group('message')
             return order, msg
         else:
-            return '/client', 'Error, you send a wrong message'
+            return '#client', 'Error, you send a wrong message SERVER'
 
     def sendToExpeditor(self, txt, client, addr):
-        msg = '/senda ' + txt
+        msg = '#senda ' + txt
         self._send(msg, client)
 
     def treat(self, order, msg, client, addr):
         orders = {
-            '/senda': self.sendToAll,
-            '/clients': self.sendClients,
-            '/client': self.sendToExpeditor
+            '#senda': self.sendToAll,
+            '#clients': self.sendClients,
+            '#client': self.sendToExpeditor
         }
         if order in orders:
             orders[order](msg, client, addr)
@@ -67,17 +68,17 @@ class Server:
     def sendToAll(self, msg, client, addr):
         data = self._clients[client][0] + ' - ' + msg
         print(addr, " : ", data)
-        data = '/senda ' + data
+        data = '#senda ' + data
         for cl in self._clients:
             self._send(data, cl)
 
     def sendClients(self, msg, client, addr):
         data = {}
         for cl in self._clients:
-            data[str(self._clients[cl][0])] = self._clients[cl][1]
+            data[str(self._clients[cl][0])] = self._clients[cl][2]
         print(data)
         data = json.dumps(data)
-        txt = '/clients ' + data
+        txt = '#clients ' + data
         self._send(txt, client)
 
     def listenToClient(self, client, addr):
