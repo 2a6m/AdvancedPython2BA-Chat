@@ -99,6 +99,8 @@ class Client:
                     handlers[command]() if param == '' else handlers[command](param)
                 except:
                     print("Erreur lors de l'exécution de la commande.")
+            else:
+                print("Commande not recognize")
 
     def _exit(self):    #erreur à cause du thread, il faut arrêter le thread
         self._running = False
