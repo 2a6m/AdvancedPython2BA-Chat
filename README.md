@@ -19,23 +19,23 @@ Les données échangées entre le serveur et le client sont du style '#ordre msg
 client va traiter les informations du message différemment.
 La liste des clients connectés se met à jour chez le client quand celui-ci la demande au serveur.
 
-### Handlers
+### Commandes
 
 Le client peut faire différente actions:
 
 '''
     handlers = {
-            '/exit': self._exit,
-            '/send': self.sendToAll,
-            '/clients': self.requestConnected,
-            '/mp': self.privatemsg
-        }
+        '/exit': self._exit,
+        '/send': self.sendToAll,
+        '/clients': self.requestConnected,
+        '/mp': self.privatemsg
+    }
 '''
 
-'/send msg' envoie le msg au serveur qui va le renvoyer à tout les clients connectés
-'/clients' demande la liste des clients connectés au serveur
-'/mp client msg' envoie un message via le socket peer-to-peer au client spécifié (1 seul client)
-'/exit' ferme les connections et quit le programme
+* '/send msg' envoie le msg au serveur qui va le renvoyer à tout les clients connectés
+* '/clients' demande la liste des clients connectés au serveur
+* '/mp client msg' envoie un message via le socket peer-to-peer au client spécifié (1 seul client)
+* '/exit' ferme les connections et quit le programme
 
 ## Authors
 
