@@ -2,6 +2,7 @@ import socket
 import threading
 import re
 import json
+import atexit
 
 
 class Server:
@@ -12,6 +13,7 @@ class Server:
         self.__sock.bind((self.__host, self.__port))
         self.__clients = {}
         self.__running = True
+        self.__pattern = re.compile(r'(?P<order>#[a-z]*) *(?P<message>.*)')
 
     def _send(self, txt, client):
         msg = txt.encode()
@@ -40,9 +42,7 @@ class Server:
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def analyse(self, txt):
-        pattern = r'(?P<order>#[a-z]*) *(?P<message>.*)'
-        p = re.compile(pattern)
-        m = p.match(txt)
+        m = self.__pattern.match(txt)
         if m is not None:
             order = m.group('order')
             msg = m.group('message')
@@ -50,9 +50,9 @@ class Server:
         else:
             return '#client', 'Error, you send a wrong message SERVER'
 
-    def sendToExpeditor(self, txt, client, addr):
-        msg = '#senda ' + txt
-        self._send(msg, client)
+    def sendToExpeditor(self, **kwargs):
+        msg = '#senda ' + kwargs['message']
+        self._send(msg, kwargs['client'])
 
     def treat(self, order, msg, client, addr):
         orders = {
@@ -61,25 +61,25 @@ class Server:
             '#client': self.sendToExpeditor
         }
         if order in orders:
-            orders[order](msg, client, addr)
+            orders[order](message=msg, client=client, address=addr)
         else:
-            self.sendToExpeditor('You send a wrong message', client, '')
+            self.sendToExpeditor(message='You send a wrong message', client=client)
 
-    def sendToAll(self, msg, client, addr):
-        data = self.__clients[client][0] + ' - ' + msg
-        print(addr, " : ", data)
+    def sendToAll(self, **kwargs):
+        data = self.__clients[kwargs['client']][0] + ' - ' + kwargs['message']
+        print(kwargs['address'], " : ", data)
         data = '#senda ' + data
         for cl in self.__clients:
             self._send(data, cl)
 
-    def sendClients(self, msg, client, addr):
+    def sendClients(self, **kwargs):
         data = {}
         for cl in self.__clients:
             data[str(self.__clients[cl][0])] = self.__clients[cl][2]
         print(data)
         data = json.dumps(data)
         txt = '#clients ' + data
-        self._send(txt, client)
+        self._send(txt, kwargs['client'])
 
     def listenToClient(self, client, addr):
         while self.__running:
