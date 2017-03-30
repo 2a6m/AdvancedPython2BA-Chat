@@ -2,7 +2,6 @@ import socket
 import threading
 import re
 import json
-import atexit
 
 
 class Server:
