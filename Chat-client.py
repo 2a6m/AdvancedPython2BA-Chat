@@ -7,27 +7,27 @@ import json
 
 class Client:
     def __init__(self, host, name=None, portPP=6000):
-        self._name = name
-        self._host = host
-        self._port = 5000
-        self._socketS = socket.socket()
-        self._socketPP = socket.socket(type=socket.SOCK_DGRAM)
-        self._socketPP.bind((socket.gethostname(), portPP))
-        self._clients = {}
-        self._running = True
+        self.__name = name
+        self.__hostS = host
+        self.__portS = 5000
+        self.__socketS = socket.socket()
+        self.__socketPP = socket.socket(type=socket.SOCK_DGRAM)
+        self.__socketPP.bind((socket.gethostname(), portPP))
+        self.__clients = {}
+        self.__running = True
 
     def _send(self, txt):
         msg = txt.encode()
         totalsent = 0
         while totalsent < len(msg):
-            sent = self._socketS.send(msg[totalsent:])
+            sent = self.__socketS.send(msg[totalsent:])
             totalsent += sent
 
     def refreshClients(self, msg):
         clients_co = json.loads(msg)
         for elem in clients_co:
-            self._clients[elem] = tuple(clients_co[elem])
-        print(self._clients)
+            self.__clients[elem] = tuple(clients_co[elem])
+        print(self.__clients)
 
     def treat(self, order, msg):
         orders = {
@@ -38,18 +38,18 @@ class Client:
             orders[order](msg)
 
     def _listen(self):
-        while self._running:
+        while self.__running:
             try:
-                data = self._socketS.recv(4096).decode()
+                data = self.__socketS.recv(4096).decode()
                 order, msg = self.analyse(data)
                 self.treat(order, msg)
             except:
                 pass
 
     def _listenPP(self):
-        while self._running:
+        while self.__running:
             try:
-                data, cl = self._socketPP.recvfrom(4096)
+                data, cl = self.__socketPP.recvfrom(4096)
                 msg = 'MP ' + str(data.decode())
                 print(msg)
             except:
@@ -64,7 +64,7 @@ class Client:
             msg = m.group('message')
             return order, msg
         else:
-            txt = 'Error, you send a wrong message ' + str(self._name)
+            txt = 'Error, you send a wrong message ' + str(self.__name)
             return '#client', txt
 
     def sendToAll(self, txt):
@@ -90,9 +90,9 @@ class Client:
 
     def privatemsg(self, param):    # mp ne supporte les noms avec un espace
         dest, msg = param.split(' ', 1)
-        if dest in self._clients:
+        if dest in self.__clients:
             try:
-                self._socketPP.sendto(msg.encode(), self._clients[dest])
+                self.__socketPP.sendto(msg.encode(), self.__clients[dest])
             except Exception as e:
                 print(e)
                 print('mp failed')
@@ -106,14 +106,14 @@ class Client:
             '/clients': self.requestConnected,
             '/mp': self.privatemsg
         }
-        self._socketS.connect((self._host, self._port))
-        self._name = self.chooseName(json.loads(self._socketS.recv(2048).decode()))
-        self._send(self._name)
-        self._send(str(self._socketPP.getsockname()[0]))
-        self._send(str(self._socketPP.getsockname()[1]))
+        self.__socketS.connect((self.__hostS, self.__portS))
+        self.__name = self.chooseName(json.loads(self.__socketS.recv(2048).decode()))
+        self._send(self.__name)
+        self._send(str(self.__socketPP.getsockname()[0]))
+        self._send(str(self.__socketPP.getsockname()[1]))
         threading.Thread(target=self._listen).start()
         threading.Thread(target=self._listenPP).start()
-        while self._running:
+        while self.__running:
             line = sys.stdin.readline().rstrip() + ' '
             # Extract the command and the param
             command = line[:line.index(' ')]
@@ -128,12 +128,12 @@ class Client:
                 print("Command not recognize")
 
     def _exit(self):
-        print('Goodbye', self._name)
-        self._running = False
-        self._socketPP.shutdown(socket.SHUT_RDWR)
-        self._socketPP.close()
-        self._socketS.shutdown(socket.SHUT_RDWR)
-        self._socketS.close()
+        print('Goodbye', self.__name)
+        self.__running = False
+        self.__socketPP.shutdown(socket.SHUT_RDWR)
+        self.__socketPP.close()
+        self.__socketS.shutdown(socket.SHUT_RDWR)
+        self.__socketS.close()
 
 if __name__ == "__main__":
     h = str(input('address to connect:',))
