@@ -37,16 +37,14 @@ class Client:
         if order in orders:
             orders[order](msg)
 
-    def _listen(self):  #quand on exit(), il attend encore un message avant de quitter
+    def _listen(self):
         while self._running:
             try:
                 data = self._socketS.recv(4096).decode()
                 order, msg = self.analyse(data)
                 self.treat(order, msg)
             except:
-                print('Error at the reception')
-                self._running = False
-                self._socketS.close()
+                pass
 
     def _listenPP(self):
         while self._running:
@@ -54,11 +52,8 @@ class Client:
                 data, cl = self._socketPP.recvfrom(4096)
                 msg = 'MP ' + str(data.decode())
                 print(msg)
-            except Exception as e:
-                print(e)
-                print('Error at the reception')
-                self._running = False
-                self._socketPP.close()
+            except:
+                pass
 
     def analyse(self, txt):
         pattern = r'(?P<order>#[a-z]*) *(?P<message>.*)'
@@ -80,7 +75,7 @@ class Client:
         msg = '#clients'
         self._send(msg)
 
-    def chooseName(self, dico):
+    def chooseName(self, dico):     # no space in the name ??
         print("You can't choose a name from this list :")
         print(dico['name forbidden'])
         ok = False
@@ -93,7 +88,7 @@ class Client:
                 print('choose a other name please')
                 ok = False
 
-    def privatemsg(self, param):
+    def privatemsg(self, param):    # mp ne supporte les noms avec un espace
         dest, msg = param.split(' ', 1)
         if dest in self._clients:
             try:
@@ -132,8 +127,12 @@ class Client:
             else:
                 print("Command not recognize")
 
-    def _exit(self):    #erreur à cause du thread, il faut arrêter le thread
+    def _exit(self):
+        print('Goodbye', self._name)
         self._running = False
+        self._socketPP.shutdown(socket.SHUT_RDWR)
+        self._socketPP.close()
+        self._socketS.shutdown(socket.SHUT_RDWR)
         self._socketS.close()
 
 if __name__ == "__main__":
