@@ -29,14 +29,6 @@ class Client:
             self.__clients[elem] = tuple(clients_co[elem])
         print(self.__clients)
 
-    def treat(self, order, msg):
-        orders = {
-            '#senda': print,
-            '#clients': self.refreshClients
-        }
-        if order in orders:
-            orders[order](msg)
-
     def _listenS(self):
         while self.__running:
             try:
@@ -67,15 +59,25 @@ class Client:
             txt = 'Error, you send a wrong message ' + str(self.__name)
             return '#client', txt
 
-    def sendToAll(self, txt):
-        msg = '#senda ' + txt
-        self._send(msg)
+    def treat(self, order, msg):
+        orders = {
+            '#senda': print,
+            '#clients': self.refreshClients
+        }
+        if order in orders:
+            orders[order](msg)
 
-    def requestConnected(self):
-        msg = '#clients'
-        self._send(msg)
+    def connection_server(self):
+        self.__socketS.connect((self.__hostS, self.__portS))
+        self.__name = self.chooseName(json.loads(self.__socketS.recv(2048).decode()))
+        self._send(self.__name)
+        self._send(str(self.__socketPP.getsockname()[0]))
+        self._send(str(self.__socketPP.getsockname()[1]))
+        threading.Thread(target=self._listenS).start()
+        threading.Thread(target=self._listenPP).start()
+        return
 
-    def chooseName(self, dico):     # no space in the name ??
+    def chooseName(self, dico):
         print("No space in the name")
         print("You can't choose a name from this list :")
         print(dico['name forbidden'])
@@ -84,21 +86,10 @@ class Client:
             name = str(input("You're name:"))
             if name not in dico['name forbidden'] and ' ' not in name:
                 ok = True
-                return(name)
+                return (name)
             else:
                 print('choose a other name please')
                 ok = False
-
-    def privatemsg(self, param):    # mp ne supporte les noms avec un espace
-        dest, msg = param.split(' ', 1)
-        if dest in self.__clients:
-            try:
-                self.__socketPP.sendto(msg.encode(), self.__clients[dest])
-            except Exception as e:
-                print(e)
-                print('mp failed')
-        else:
-            print('Wrong name')
 
     def run(self):
         handlers = {
@@ -107,13 +98,7 @@ class Client:
             '/clients': self.requestConnected,
             '/mp': self.privatemsg
         }
-        self.__socketS.connect((self.__hostS, self.__portS))
-        self.__name = self.chooseName(json.loads(self.__socketS.recv(2048).decode()))
-        self._send(self.__name)
-        self._send(str(self.__socketPP.getsockname()[0]))
-        self._send(str(self.__socketPP.getsockname()[1]))
-        threading.Thread(target=self._listenS).start()
-        threading.Thread(target=self._listenPP).start()
+        self.connection_server()
         while self.__running:
             line = sys.stdin.readline().rstrip() + ' '
             # Extract the command and the param
@@ -127,6 +112,26 @@ class Client:
                     print("Erreur lors de l'exécution de la commande.")
             else:
                 print("Command not recognize")
+
+    def sendToAll(self, txt):
+        msg = '#senda ' + txt
+        self._send(msg)
+
+    def requestConnected(self):
+        msg = '#clients'
+        self._send(msg)
+
+    def privatemsg(self, param):
+        dest, msg = param.split(' ', 1)
+        if dest in self.__clients:
+            try:
+                self.__socketPP.sendto(msg.encode(), self.__clients[dest])
+            except Exception as e:
+                print(e)
+                print('mp failed')
+        else:
+            print('Wrong name')
+
 
     def _exit(self):
         print('Goodbye', self.__name)
