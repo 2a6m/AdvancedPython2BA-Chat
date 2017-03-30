@@ -24,7 +24,7 @@ La liste des clients connectés se met à jour chez le client quand celui-ci la 
 Le client peut faire différente actions:
 
 '''
-handlers = {
+    handlers = {
             '/exit': self._exit,
             '/send': self.sendToAll,
             '/clients': self.requestConnected,
