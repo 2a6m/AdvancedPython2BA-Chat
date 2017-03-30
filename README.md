@@ -23,14 +23,14 @@ La liste des clients connectés se met à jour chez le client quand celui-ci la 
 
 Le client peut faire différente actions:
 
-'''
+
     handlers = {
         '/exit': self._exit,
         '/send': self.sendToAll,
         '/clients': self.requestConnected,
         '/mp': self.privatemsg
     }
-'''
+
 
 * '/send msg' envoie le msg au serveur qui va le renvoyer à tout les clients connectés
 * '/clients' demande la liste des clients connectés au serveur
