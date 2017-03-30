@@ -37,7 +37,7 @@ class Client:
         if order in orders:
             orders[order](msg)
 
-    def _listen(self):
+    def _listenS(self):
         while self.__running:
             try:
                 data = self.__socketS.recv(4096).decode()
@@ -76,12 +76,13 @@ class Client:
         self._send(msg)
 
     def chooseName(self, dico):     # no space in the name ??
+        print("No space in the name")
         print("You can't choose a name from this list :")
         print(dico['name forbidden'])
         ok = False
         while ok is not True:
             name = str(input("You're name:"))
-            if name not in dico['name forbidden']:
+            if name not in dico['name forbidden'] and ' ' not in name:
                 ok = True
                 return(name)
             else:
@@ -111,7 +112,7 @@ class Client:
         self._send(self.__name)
         self._send(str(self.__socketPP.getsockname()[0]))
         self._send(str(self.__socketPP.getsockname()[1]))
-        threading.Thread(target=self._listen).start()
+        threading.Thread(target=self._listenS).start()
         threading.Thread(target=self._listenPP).start()
         while self.__running:
             line = sys.stdin.readline().rstrip() + ' '
