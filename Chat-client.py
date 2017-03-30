@@ -15,6 +15,7 @@ class Client:
         self.__socketPP.bind((socket.gethostname(), portPP))
         self.__clients = {}
         self.__running = True
+        self.__pattern = re.compile(r'(?P<order>#[a-z]*) *(?P<message>.*)')
 
     def _send(self, txt):
         msg = txt.encode()
@@ -48,9 +49,7 @@ class Client:
                 pass
 
     def analyse(self, txt):
-        pattern = r'(?P<order>#[a-z]*) *(?P<message>.*)'
-        p = re.compile(pattern)
-        m = p.match(txt)
+        m = self.__pattern.match(txt)
         if m is not None:
             order = m.group('order')
             msg = m.group('message')
@@ -124,6 +123,7 @@ class Client:
     def privatemsg(self, param):
         dest, msg = param.split(' ', 1)
         if dest in self.__clients:
+            msg = self.__name + ' : ' + msg
             try:
                 self.__socketPP.sendto(msg.encode(), self.__clients[dest])
             except Exception as e:
@@ -131,7 +131,6 @@ class Client:
                 print('mp failed')
         else:
             print('Wrong name')
-
 
     def _exit(self):
         print('Goodbye', self.__name)
