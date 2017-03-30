@@ -55,7 +55,7 @@ class Client:
             msg = m.group('message')
             return order, msg
         else:
-            txt = 'Error, you send a wrong message ' + str(self.__name)
+            txt = 'Error, you sent a wrong message ' + str(self.__name)
             return '#client', txt
 
     def treat(self, order, msg):
@@ -79,15 +79,15 @@ class Client:
     def chooseName(self, dico):
         print("No space in the name")
         print("You can't choose a name from this list :")
-        print(dico['name forbidden'])
+        print(dico['Name forbidden'])
         ok = False
         while ok is not True:
-            name = str(input("You're name:"))
-            if name not in dico['name forbidden'] and ' ' not in name:
+            name = str(input("Your name:"))
+            if name not in dico['Name forbidden'] and ' ' not in name:
                 ok = True
                 return (name)
             else:
-                print('choose a other name please')
+                print('Choose another name')
                 ok = False
 
     def run(self):
@@ -108,9 +108,9 @@ class Client:
                 try:
                     handlers[command]() if param == '' else handlers[command](param)
                 except:
-                    print("Erreur lors de l'exécution de la commande.")
+                    print("Error: couldn't execute the command")
             else:
-                print("Command not recognize")
+                print("Invalid command")
 
     def sendToAll(self, txt):
         msg = '#senda ' + txt
@@ -130,7 +130,7 @@ class Client:
                 print(e)
                 print('mp failed')
         else:
-            print('Wrong name')
+            print('User not found')
 
     def _exit(self):
         print('Goodbye', self.__name)

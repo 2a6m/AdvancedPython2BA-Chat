@@ -30,7 +30,7 @@ class Server:
 
     def run(self):
         self.__sock.listen()
-        print('listenning...')
+        print('listening...')
         while self.__running:
             client, addr = self.__sock.accept()
             client.send(self.nameForbidden().encode())
@@ -38,7 +38,7 @@ class Server:
             pp_client = (client.recv(2048).decode(), int(client.recv(2048).decode()))
             self.__clients[client] = (name_client, addr, pp_client)
             print(self.__clients)
-            client.send("#senda You're connected to the server".encode())
+            client.send("#senda --CONNECTED--".encode())
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def analyse(self, txt):
@@ -48,7 +48,7 @@ class Server:
             msg = m.group('message')
             return order, msg
         else:
-            return '#client', 'Error, you send a wrong message SERVER'
+            return '#client', 'Error, you sent a wrong message SERVER'
 
     def sendToExpeditor(self, **kwargs):
         msg = '#senda ' + kwargs['message']
@@ -63,7 +63,7 @@ class Server:
         if order in orders:
             orders[order](message=msg, client=client, address=addr)
         else:
-            self.sendToExpeditor(message='You send a wrong message', client=client)
+            self.sendToExpeditor(message='You sent a wrong message', client=client)
 
     def sendToAll(self, **kwargs):
         data = self.__clients[kwargs['client']][0] + ' - ' + kwargs['message']
