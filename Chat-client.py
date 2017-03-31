@@ -16,6 +16,7 @@ class Client:
         self.__clients = {}
         self.__running = True
         self.__pattern = re.compile(r'(?P<order>#[a-z]*) *(?P<message>.*)')
+        # pattern to analyse received data
 
     def _send(self, txt):
         msg = txt.encode()
@@ -25,21 +26,26 @@ class Client:
             totalsent += sent
 
     def refreshClients(self, msg):
+        # load list of client connected
         clients_co = json.loads(msg)
         for elem in clients_co:
             self.__clients[elem] = tuple(clients_co[elem])
         print(self.__clients)
 
     def _listenS(self):
+        # listen the socket use for the server
         while self.__running:
             try:
                 data = self.__socketS.recv(4096).decode()
                 order, msg = self.analyse(data)
+                # receive th data split in the order and the message
                 self.treat(order, msg)
+                # execute the order with the message
             except:
                 pass
 
     def _listenPP(self):
+        # listen the socket use for the perr-to-peer
         while self.__running:
             try:
                 data, cl = self.__socketPP.recvfrom(4096)
@@ -49,6 +55,8 @@ class Client:
                 pass
 
     def analyse(self, txt):
+        # analyse the data received from the sockets, messages have a code to be identified
+        # extract the order and the message
         m = self.__pattern.match(txt)
         if m is not None:
             order = m.group('order')
@@ -67,6 +75,7 @@ class Client:
             orders[order](msg)
 
     def connection_server(self):
+        # transfert of data to be ready to use the client/server
         self.__socketS.connect((self.__hostS, self.__portS))
         self.__name = self.chooseName(json.loads(self.__socketS.recv(2048).decode()))
         self._send(self.__name)
@@ -121,8 +130,11 @@ class Client:
         self._send(msg)
 
     def privatemsg(self, param):
+        # send message to client without the server
         dest, msg = param.split(' ', 1)
+        # take the client and the message from the data
         if dest in self.__clients:
+            # check if we have is address
             msg = self.__name + ' : ' + msg
             try:
                 self.__socketPP.sendto(msg.encode(), self.__clients[dest])

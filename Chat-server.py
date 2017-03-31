@@ -23,6 +23,7 @@ class Server:
             totalsent += sent
 
     def nameForbidden(self):
+        # send all the name used to have no problem with the client version of the client's dictionnary
         lst = [self.__clients[cl] for cl in self.__clients]
         name_lst = [elem[0] for elem in lst] + ['']
         name = {'name forbidden': name_lst}
@@ -40,6 +41,7 @@ class Server:
             print(self.__clients)
             client.send("#senda --CONNECTED--".encode())
             time.sleep(0.1)
+            # transfert of data to have information about the client
             for cl in self.__clients:
                 self.sendToExpeditor(message=str(self.__clients[client][0] + ' is Connected'), client=cl)
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()

@@ -35,7 +35,13 @@ Le client peut faire différente actions:
 * '/send msg' envoie le msg au serveur qui va le renvoyer à tout les clients connectés
 * '/clients' demande la liste des clients connectés au serveur
 * '/mp client msg' envoie un message via le socket peer-to-peer au client spécifié (1 seul client)
-* '/exit' ferme les connections et quit le programme
+* '/exit' ferme les connections et quitte le programme
+
+## Connection client/server
+
+le client rentre 2 informations avant de se connecter, l'adresse IP du serveur au quel il veut se connecter
+(le port est prédéfini (5000))
+et le numéro du port pour la connection UDP
 
 ## Authors
 
