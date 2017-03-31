@@ -79,11 +79,11 @@ class Client:
     def chooseName(self, dico):
         print("No space in the name")
         print("You can't choose a name from this list :")
-        print(dico['Name forbidden'])
+        print(dico['name forbidden'])
         ok = False
         while ok is not True:
             name = str(input("Your name:"))
-            if name not in dico['Name forbidden'] and ' ' not in name:
+            if name not in dico['name forbidden'] and ' ' not in name:
                 ok = True
                 return (name)
             else:
