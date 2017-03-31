@@ -2,6 +2,7 @@ import socket
 import threading
 import re
 import json
+import time
 
 
 class Server:
@@ -38,6 +39,9 @@ class Server:
             self.__clients[client] = (name_client, addr, pp_client)
             print(self.__clients)
             client.send("#senda --CONNECTED--".encode())
+            time.sleep(0.1)
+            for cl in self.__clients:
+                self.sendToExpeditor(message=str(self.__clients[client][0] + ' is Connected'), client=cl)
             threading.Thread(target=self.listenToClient, args=(client, addr)).start()
 
     def analyse(self, txt):
